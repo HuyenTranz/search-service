@@ -2,10 +2,10 @@
 Dịch vụ này cung cấp API để tìm kiếm người dùng theo username hoặc họ tên (fullname).
 
 # Tính năng
-Tìm kiếm người dùng theo username hoặc fullname (không phân biệt chữ hoa/thường)
-Trả về danh sách người dùng phù hợp (giới hạn tối đa 20 kết quả)
-Từ chối nếu không nhập từ khóa tìm kiếm
-Từ chối nếu chuỗi tìm kiếm chỉ chứa ký tự đặc biệt
+- Tìm kiếm người dùng theo username hoặc fullname (không phân biệt chữ hoa/thường)
+- Trả về danh sách người dùng phù hợp (giới hạn tối đa 20 kết quả)
+- Từ chối nếu không nhập từ khóa tìm kiếm
+- Từ chối nếu chuỗi tìm kiếm chỉ chứa ký tự đặc biệt
 
 # Chạy ở môi trường phát triển
 npm run dev
@@ -17,15 +17,11 @@ GET /api/search?text=...
 text (string): Một phần username hoặc fullname cần tìm kiếm.
 
 # Hành vi:
-✅ Trả về danh sách người dùng khớp với chuỗi tìm kiếm.
-
-⚠️ Nếu text rỗng → trả về thông báo yêu cầu nhập từ khóa.
-
-❌ Nếu chỉ nhập ký tự đặc biệt → từ chối tìm kiếm.
-
-🛑 Nếu không tìm thấy người dùng → trả về danh sách rỗng.
-
-🚨 Nếu có lỗi máy chủ → trả về thông báo lỗi và status code phù hợp.
+- Trả về danh sách người dùng khớp với chuỗi tìm kiếm.
+- Nếu text rỗng → trả về thông báo yêu cầu nhập từ khóa.
+- Nếu chỉ nhập ký tự đặc biệt → từ chối tìm kiếm.
+- Nếu không tìm thấy người dùng → trả về danh sách rỗng.
+- Nếu có lỗi máy chủ → trả về thông báo lỗi và status code phù hợp.
 
 # Ví dụ:
 Phản hồi thành công: 
