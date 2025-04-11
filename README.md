@@ -27,7 +27,9 @@ text (string): Một phần username hoặc fullname cần tìm kiếm.
 
 🚨 Nếu có lỗi máy chủ → trả về thông báo lỗi và status code phù hợp.
 
-# Ví dụ phản hồi thành công:
+# Ví dụ:
+Phản hồi thành công: 
+```json
 {
   "message": "Tìm kiếm thành công",
   "users": [
@@ -43,13 +45,14 @@ text (string): Một phần username hoặc fullname cần tìm kiếm.
   "isEmpty": false,
   "status": true
 }
+```
 
-# Xử lý lỗi
 Các phản hồi lỗi có định dạng như sau:
+```json
 {
     "message": "Không hỗ trợ tìm kiếm chỉ bằng ký tự đặc biệt!",
     "users": [],
     "isEmpty": true,
     "status": false
 }
-
+```
