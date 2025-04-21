@@ -11,7 +11,7 @@ const createServiceProxy = (serviceName) => {
     target: serviceUrl,
     changeOrigin: true,
     pathRewrite: {
-      [`^/api/${serviceName}`]: '',
+      [`^/api/${serviceName}`]: `/api/${serviceName}`,
     },
     onError: (err, req, res) => {
       console.error(`Error proxying to ${serviceName}:`, err);

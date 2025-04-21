@@ -9,6 +9,7 @@ const connectDB = require('./config/database');
 const searchRoutes = require('./routes/search.routes');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Connect to MongoDB
 connectDB();
