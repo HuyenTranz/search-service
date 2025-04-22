@@ -2,27 +2,7 @@ const User = require("../models/user.model");
 
 const searchUser = async (req, res) => {
     try {
-        //search?text=
         const searchText = req.query.text?.trim();
-
-        if (!searchText) {
-            return res.status(200).json({
-                message: "Vui lòng nhập người dùng cần tìm kiếm!",
-                users: [],
-                isEmpty: true,
-                status: false
-            });
-        }
-
-        // Nếu chỉ nhập toàn ký tự đặc biệt → từ chối tìm kiếm
-        if (/^[^a-zA-Z0-9]+$/.test(searchText)) {
-            return res.status(200).json({
-                message: "Không hỗ trợ tìm kiếm chỉ bằng ký tự đặc biệt!",
-                users: [],
-                isEmpty: true,
-                status: false
-            });
-        }
 
         const users = await User.find({
             $or: [
@@ -58,12 +38,12 @@ const searchUser = async (req, res) => {
         });
 
     } catch (error) {
-        console.log(error)
+        console.log(error); // Nhớ thay bằng logger.error sau này
         return res.status(500).json({
             status: false,
             message: "Lỗi máy chủ"
         });
     }
-}
+};
 
-module.exports = { searchUser }
+module.exports = { searchUser };
