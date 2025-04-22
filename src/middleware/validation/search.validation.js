@@ -11,6 +11,14 @@ const searchUserValidationRules = [
             }
             return true;
         }),
+    query('page')
+        .optional()
+        .isInt({ min: 1 })
+        .withMessage('Số trang phải là số nguyên lớn hơn hoặc bằng 1!'),
+    query('limit')
+        .optional()
+        .isInt({ min: 1, max: 100 })
+        .withMessage('Giới hạn mỗi trang phải là số nguyên từ 1 đến 100!')
 ];
 
 module.exports = { searchUserValidationRules };

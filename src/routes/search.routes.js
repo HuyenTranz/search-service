@@ -1,11 +1,26 @@
 const express = require('express');
 const router = express.Router();
-const { body } = require('express-validator');
 const { authMiddleware } = require('../middleware/auth.middleware');
 const { searchUser } = require('../controllers/search.controller');
-const { createValidationMiddleware } = require('../middleware/validation/validateRequest');
 const { searchUserValidationRules } = require('../middleware/validation/search.validation');
+const { validationResult } = require('express-validator');
 
-router.get("/search", authMiddleware, createValidationMiddleware(searchUserValidationRules), searchUser);
+// Middleware để kiểm tra kết quả validation
+const validateRequest = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    next();
+};
 
-module.exports = router; 
+// Route tìm kiếm người dùng
+router.get(
+    "/search",
+    authMiddleware, // Middleware xác thực
+    searchUserValidationRules, // Các quy tắc validation
+    validateRequest, // Kiểm tra kết quả validation
+    searchUser // Controller xử lý logic tìm kiếm
+);
+
+module.exports = router;
