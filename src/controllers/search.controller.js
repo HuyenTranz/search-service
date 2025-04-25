@@ -1,42 +1,125 @@
 const User = require("../models/user.model");
+const Post = require("../models/post.model");
 
 const searchUser = async (req, res) => {
     try {
-        const searchText = req.query.text?.trim();
-        const page = parseInt(req.query.page) || 1; // Mặc định là trang 1
-        const limit = parseInt(req.query.limit) || 8; // Mặc định là 8 item mỗi trang
-        const skip = (page - 1) * limit; // Tính toán số lượng item cần bỏ qua
-
-        // Đếm tổng số người dùng phù hợp
-        const totalUsers = await User.countDocuments({
-            $or: [
-                { username: new RegExp(searchText, 'i') },
-                { fullname: new RegExp(searchText, 'i') },
-            ]
-        });
-
-        // Tính tổng số trang
-        const totalPages = Math.ceil(totalUsers / limit);
-
-        // Lấy danh sách người dùng theo phân trang
-        const users = await User.find({
-            $or: [
-                { username: new RegExp(searchText, 'i') },
-                { fullname: new RegExp(searchText, 'i') },
-            ]
-        })
-            .skip(skip) // Bỏ qua các item của các trang trước
-            .limit(limit); // Giới hạn số lượng item trả về
-
-        if (!users || users.length === 0) {
-            return res.status(200).json({
-                message: "Không tìm thấy người dùng!",
-                users: [],
-                isEmpty: true,
+        const { text, page, limit } = req.query;
+        if (!text) {
+            return res.status(400).json({
                 status: false,
-                totalUsers,
-                totalPages
+                message: "Thiếu từ khóa tìm kiếm"
             });
+        }
+
+        const searchText = text.trim();
+        const currentPage = parseInt(page) || 1;
+        const itemsPerPage = parseInt(limit) || 8;
+        const skip = (currentPage - 1) * itemsPerPage;
+
+        let users = [];
+        let totalUsers = 0;
+        let posts = [];
+        let totalPosts = 0;
+
+        if (searchText === "#") {
+            return res.status(400).json({
+                status: false,
+                message: "Từ khóa tìm kiếm không hợp lệ",
+                data: {
+                    users: {
+                        items: [],
+
+                    },
+                    posts: {
+                        items: []
+                    }
+                },
+            });
+        }
+
+        if (searchText.startsWith('#')) {
+            // Tìm user theo username và fullname (bao gồm cả #)
+            totalUsers = await User.countDocuments({
+                $or: [
+                    { username: new RegExp(searchText, 'i') },
+                    { fullname: new RegExp(searchText, 'i') }
+                ]
+            });
+
+            users = await User.find({
+                $or: [
+                    { username: new RegExp(searchText, 'i') },
+                    { fullname: new RegExp(searchText, 'i') }
+                ]
+            })
+                .skip(skip)
+                .limit(itemsPerPage);
+
+            // Tìm post chỉ theo hashtag
+            totalPosts = await Post.countDocuments({
+                hashtags: searchText
+            });
+
+            posts = await Post.find({
+                hashtags: searchText
+            })
+                .skip(skip)
+                .limit(itemsPerPage)
+                .lean();
+        } else {
+            // Tìm user theo username và fullname
+            totalUsers = await User.countDocuments({
+                $or: [
+                    { username: new RegExp(searchText, 'i') },
+                    { fullname: new RegExp(searchText, 'i') }
+                ]
+            });
+
+            users = await User.find({
+                $or: [
+                    { username: new RegExp(searchText, 'i') },
+                    { fullname: new RegExp(searchText, 'i') }
+                ]
+            })
+                .skip(skip)
+                .limit(itemsPerPage);
+
+            // Tìm post theo cả content và hashtags
+            totalPosts = await Post.countDocuments({
+                $or: [
+                    { content: new RegExp(searchText, 'i') },
+                    { hashtags: new RegExp(searchText, 'i') }
+                ]
+            });
+
+            posts = await Post.find({
+                $or: [
+                    { content: new RegExp(searchText, 'i') },
+                    { hashtags: new RegExp(searchText, 'i') }
+                ]
+            })
+                .skip(skip)
+                .limit(itemsPerPage)
+                .lean();
+        }
+
+        // Get creator information for posts
+        if (posts.length > 0) {
+            const creatorIds = posts.map(post => post.creator_id);
+            const creators = await User.find(
+                { _id: { $in: creatorIds } },
+                { _id: 1, username: 1, fullname: 1, avatar: 1 }
+            ).lean();
+
+            const creatorMap = creators.reduce((map, creator) => {
+                map[creator._id.toString()] = creator;
+                return map;
+            }, {});
+
+            posts = posts.map(post => ({
+                ...post,
+                creator: creatorMap[post.creator_id.toString()]
+            }));
         }
 
         const formattedUsers = users.map(user => ({
@@ -48,12 +131,29 @@ const searchUser = async (req, res) => {
             link: user.link
         }));
 
+        const totalPages = Math.max(
+            Math.ceil(totalUsers / itemsPerPage),
+            Math.ceil(totalPosts / itemsPerPage)
+        );
+
+        console.log(posts)
+
         return res.status(200).json({
+            type: "search",
             message: "Tìm kiếm thành công",
-            users: formattedUsers,
-            isEmpty: false,
+            data: {
+                users: {
+                    items: formattedUsers,
+                    total: totalUsers,
+                    isEmpty: users.length === 0
+                },
+                posts: {
+                    items: posts,
+                    total: totalPosts,
+                    isEmpty: posts.length === 0
+                }
+            },
             status: true,
-            totalUsers,
             totalPages
         });
 

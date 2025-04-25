@@ -1,3 +1,5 @@
+// const { post } = require('../routes/search.routes');
+
 require('dotenv').config();
 
 module.exports = {
@@ -17,9 +19,7 @@ module.exports = {
   // Service URLs
   services: {
     product: process.env.PRODUCT_SERVICE_URL,
-    // Có thể thay thế tên bằng service khác
-    // order: process.env.ORDER_SERVICE_URL,
-    // payment: process.env.PAYMENT_SERVICE_URL,
+    post: process.env.POST_SERVICE_URL,
   },
 
   // Rate Limiting
