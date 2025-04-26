@@ -37,6 +37,7 @@ const searchUser = async (req, res) => {
             });
         }
 
+        // Nếu từ khóa bắt đầu bằng # → ưu tiên tìm theo hashtag
         if (searchText.startsWith('#')) {
             // Tìm user theo username và fullname (bao gồm cả #)
             totalUsers = await User.countDocuments({
@@ -60,13 +61,14 @@ const searchUser = async (req, res) => {
                 hashtags: searchText
             });
 
+            // Chỉ tìm bài viết có hashtag đúng y như từ khóa.
             posts = await Post.find({
                 hashtags: searchText
             })
                 .skip(skip)
                 .limit(itemsPerPage)
                 .lean();
-        } else {
+        } else { // Nếu KHÔNG bắt đầu bằng # → tìm theo cả content và hashtag
             // Tìm user theo username và fullname
             totalUsers = await User.countDocuments({
                 $or: [
@@ -83,6 +85,7 @@ const searchUser = async (req, res) => {
             })
                 .skip(skip)
                 .limit(itemsPerPage);
+
 
             // Tìm post theo cả content và hashtags
             totalPosts = await Post.countDocuments({
@@ -103,7 +106,7 @@ const searchUser = async (req, res) => {
                 .lean();
         }
 
-        // Get creator information for posts
+        // Gắn thông tin người tạo bài viết (creator)
         if (posts.length > 0) {
             const creatorIds = posts.map(post => post.creator_id);
             const creators = await User.find(
@@ -122,6 +125,7 @@ const searchUser = async (req, res) => {
             }));
         }
 
+        // Định dạng lại dữ liệu user trả về
         const formattedUsers = users.map(user => ({
             _id: user._id,
             username: user.username,
@@ -131,6 +135,7 @@ const searchUser = async (req, res) => {
             link: user.link
         }));
 
+        // Tính tổng số trang
         const totalPages = Math.max(
             Math.ceil(totalUsers / itemsPerPage),
             Math.ceil(totalPosts / itemsPerPage)
